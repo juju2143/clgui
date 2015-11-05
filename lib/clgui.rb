@@ -1,4 +1,8 @@
+##
+# Class for drawing pixels on Unicode VT100 terminals.
 class CLGUI
+  ##
+  # Configures terminal for drawing.
   def initialize
     @stty_state=`stty -g`
     @h,@w=`stty size`.split.map{|x|x.to_i}
@@ -8,6 +12,8 @@ class CLGUI
     @display=Array.new(h){Array.new(w,0)}
     @@POS=[[0,3],[1,4],[2,5],[6,7]]
   end
+  ##
+  # Cleans up before exiting.
   def close
     `stty #{@stty_state}`
     print 27.chr+"[?25h"
@@ -39,6 +45,36 @@ class CLGUI
   end
   def pxl_test(x,y)
     self.chr_test((x/2).floor,(y/4).floor,@@POS[y%4][x%2])
+  end
+  def line(x1,y1,x2,y2)
+    s=(y2-y1).abs>(x2-x1).abs
+    if s
+      x1,y1=y1,x1
+      x2,y2=y2,x2
+    end
+    if x1>x2
+      x1,x2=x2,x1
+      y1,y2=y2,y1
+    end
+    dx=x2-x1
+    dy=(y2-y1).abs
+    e=dx/2
+    ys=y1<y2 ? 1 : -1
+    y=y1
+    x1.upto(x2){|x|
+      if s
+        self.pxl_on(y,x)
+        yield y,x
+      else
+        self.pxl_on(x,y)
+        yield x,y
+      end
+      e-=dy
+      if e<0
+        y+=ys
+        e+=dx
+      end
+    }
   end
   def draw_chr(x,y)
     print 27.chr+"["+(y+1).to_s+";"+(x+1).to_s+"H"

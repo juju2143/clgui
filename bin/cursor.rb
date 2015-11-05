@@ -22,6 +22,7 @@ x=d.w/2
 y=d.h/2
 d.pxl_on(x,y)
 d.draw_pxl(x,y)
+d.line(40,0,0,20){|a,b|d.draw_pxl(a,b)}
 while 1 do
   c = read_char
   case c
